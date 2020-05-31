@@ -8,6 +8,7 @@ namespace RequestSpeedTest.SiteMapUtils.Models
         public const string TextXml = "text/xml";
         public const string ApplicationXml = "application/xml";
         public const string TextPlain = "text/plain";
+        public const string ApplicationGZip = "application/x-gzip";
 
         public static bool IsAvailable(string type)
         {
