@@ -98,7 +98,7 @@ namespace RequestSpeedTest.SiteMapUtils.Services
 
             var requiresManualDecompression = false;
 
-            if (contentType.Equals("application/x-gzip", StringComparison.InvariantCultureIgnoreCase))
+            if (contentType.Equals(ContentTypes.ApplicationGZip, StringComparison.InvariantCultureIgnoreCase))
             {
                 requiresManualDecompression = true;
                 var baseFileName = Path.GetFileNameWithoutExtension(sitemapUrl.AbsolutePath);

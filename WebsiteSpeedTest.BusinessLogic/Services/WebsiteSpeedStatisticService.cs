@@ -19,16 +19,14 @@ namespace RequestSpeedTest.BusinessLogic.Services
     public class WebsiteSpeedStatisticService : IWebsiteSpeedStatisticService
     {
         private readonly ISiteMapService _siteMapService;
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IRepository<RequestBenchmarkEntry> _requestBenchmarkRepository;
 
         public WebsiteSpeedStatisticService(ISiteMapService siteMapService, IUnitOfWork unitOfWork, IMapper mapper)
         {
             _siteMapService = siteMapService;
-            _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _requestBenchmarkRepository = _unitOfWork.GetRepository<RequestBenchmarkEntry>();
+            _requestBenchmarkRepository = unitOfWork.GetRepository<RequestBenchmarkEntry>();
         }
 
         public async Task<RequestBenchmarkEntryDto> EvaluatePerformanceAsync(Uri siteUri)
@@ -37,7 +35,6 @@ namespace RequestSpeedTest.BusinessLogic.Services
             var benchmarkEntry = await GetBenchmarkDetailsAsync(siteUris, siteUri);
 
             await _requestBenchmarkRepository.AddAsync(benchmarkEntry);
-            await _unitOfWork.CommitAsync();
 
             var requestDto = _mapper.Map<RequestBenchmarkEntry, RequestBenchmarkEntryDto>(benchmarkEntry);
 

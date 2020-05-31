@@ -2,17 +2,17 @@ using Autofac;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RequestSpeedTest.API.Configurations;
 using RequestSpeedTest.API.Filters;
 using RequestSpeedTest.API.Mappings;
 using RequestSpeedTest.BusinessLogic;
 using RequestSpeedTest.BusinessLogic.Mappings;
 using RequestSpeedTest.SiteMapUtils;
 using WebsiteSpeedTest.DataAccess;
-using WebsiteSpeedTest.DataAccess.Context;
 
 namespace RequestSpeedTest.API
 {
@@ -27,14 +27,20 @@ namespace RequestSpeedTest.API
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers(options => { options.Filters.Add(typeof(ExceptionFilter)); });
+
+            services.AddControllers(options =>
+            {
+                options.Filters.Add(typeof(ExceptionFilter));
+                options.CacheProfiles.Add("DailyCache", new CacheProfile
+                {
+                    Duration = 86400,
+                    Location = ResponseCacheLocation.Any
+                });
+            });
 
             services.AddAutoMapper(
                 typeof(DtoToViewModelProfile),
                 typeof(EntityToDtoProfile));
-
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
@@ -53,7 +59,7 @@ namespace RequestSpeedTest.API
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            CorsConfiguration.Configure(app, Configuration);
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }

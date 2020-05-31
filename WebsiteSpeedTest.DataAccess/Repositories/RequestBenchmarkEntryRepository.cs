@@ -1,54 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using RequestSpeedTest.Domain.Abstractions;
 using RequestSpeedTest.Domain.Entities;
-using WebsiteSpeedTest.DataAccess.Context;
 
 namespace WebsiteSpeedTest.DataAccess.Repositories
 {
     public class RequestBenchmarkEntryRepository : IRepository<RequestBenchmarkEntry>
     {
-        private readonly DbSet<RequestBenchmarkEntry> _requestDbSet;
+        private readonly IMongoCollection<RequestBenchmarkEntry> _requestCollection;
 
-        public RequestBenchmarkEntryRepository(AppDbContext dbContext)
+        public RequestBenchmarkEntryRepository(IMongoClient client, IDatabaseOptions options)
         {
-            _requestDbSet = dbContext.Set<RequestBenchmarkEntry>();
+            var databaseName = options.GetDatabaseName();
+            var collectionName = options.GetCollectionName<RequestBenchmarkEntry>();
+
+            var database = client.GetDatabase(databaseName);
+            _requestCollection = database.GetCollection<RequestBenchmarkEntry>(collectionName);
         }
 
-        public Task<RequestBenchmarkEntry> FindSingleAsync(Expression<Func<RequestBenchmarkEntry, bool>> predicate)
+        public async Task<RequestBenchmarkEntry> FindSingleAsync(
+            Expression<Func<RequestBenchmarkEntry, bool>> predicate)
         {
-            var request = _requestDbSet
-                .Include(r => r.Endpoints)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(predicate);
+            var request = (await _requestCollection.FindAsync(predicate)).FirstOrDefault();
 
             return request;
         }
 
-        public async Task<List<RequestBenchmarkEntry>> FindAllAsync(Expression<Func<RequestBenchmarkEntry, bool>> predicate = null)
+        public async Task<List<RequestBenchmarkEntry>> FindAllAsync(
+            Expression<Func<RequestBenchmarkEntry, bool>> predicate = null)
         {
-            var requests = _requestDbSet
-                .Include(request => request.Endpoints)
-                .AsNoTracking();
-
-            if (predicate != null)
-            {
-                requests = requests.Where(predicate);
-            }
-
-            return await requests.ToListAsync();
+            return predicate != null
+                ? (await _requestCollection.FindAsync(predicate)).ToList()
+                : (await _requestCollection.FindAsync(entry => true)).ToList();
         }
 
-        public async Task<int> AddAsync(RequestBenchmarkEntry entity)
+        public async Task AddAsync(RequestBenchmarkEntry entity)
         {
-            _requestDbSet.Attach(entity);
-            await _requestDbSet.AddAsync(entity);
+            var maxId = await _requestCollection.CountDocumentsAsync(Builders<RequestBenchmarkEntry>.Filter.Empty);
+            entity.Id = ++maxId;
 
-            return entity.Id;
+            await _requestCollection.InsertOneAsync(entity);
         }
     }
 }

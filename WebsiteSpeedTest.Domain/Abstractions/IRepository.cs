@@ -10,6 +10,6 @@ namespace RequestSpeedTest.Domain.Abstractions
     {
         Task<TEntity> FindSingleAsync(Expression<Func<TEntity, bool>> predicate);
         Task<List<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> predicate = null);
-        Task<int> AddAsync(TEntity entity);
+        Task AddAsync(TEntity entity);
     }
 }
