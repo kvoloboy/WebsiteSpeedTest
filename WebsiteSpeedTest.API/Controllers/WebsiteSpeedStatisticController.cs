@@ -30,7 +30,8 @@ namespace RequestSpeedTest.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> EvaluatePerformanceAsync(EvaluatePerformanceRequestModel requestModel)
+        public async Task<IActionResult> EvaluatePerformanceAsync(
+            [FromBody] EvaluatePerformanceRequestModel requestModel)
         {
             var uri = new Uri(requestModel.Uri);
             var requestDetails = await _websiteSpeedStatisticService.EvaluatePerformanceAsync(uri);
@@ -45,7 +46,9 @@ namespace RequestSpeedTest.API.Controllers
         public async Task<IActionResult> GetAllAsync()
         {
             var requestsDto = await _websiteSpeedStatisticService.GetAllAsync();
-            var viewModels = _mapper.Map<IEnumerable<RequestBenchmarkEntryDto>, IEnumerable<RequestBenchmarkEntryViewModel>>(requestsDto);
+            var viewModels =
+                _mapper.Map<IEnumerable<RequestBenchmarkEntryDto>, IEnumerable<RequestBenchmarkEntryViewModel>>(
+                    requestsDto);
 
             _logger.LogDebug("Reading requests history");
 

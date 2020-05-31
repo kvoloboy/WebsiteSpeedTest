@@ -1,19 +1,15 @@
-﻿using System.Threading.Tasks;
-using RequestSpeedTest.Domain.Abstractions;
+﻿using RequestSpeedTest.Domain.Abstractions;
 using RequestSpeedTest.Domain.Entities;
-using WebsiteSpeedTest.DataAccess.Context;
 using WebsiteSpeedTest.DataAccess.Factories.Interfaces;
 
 namespace WebsiteSpeedTest.DataAccess.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly AppDbContext _dbContext;
         private readonly IRepositoryFactory _repositoryFactory;
 
-        public UnitOfWork(AppDbContext dbContext, IRepositoryFactory repositoryFactory)
+        public UnitOfWork(IRepositoryFactory repositoryFactory)
         {
-            _dbContext = dbContext;
             _repositoryFactory = repositoryFactory;
         }
 
@@ -22,11 +18,6 @@ namespace WebsiteSpeedTest.DataAccess.Repositories
             var repository = _repositoryFactory.Create<TEntity>();
 
             return repository;
-        }
-
-        public async Task CommitAsync()
-        {
-            await _dbContext.SaveChangesAsync();
         }
     }
 }
